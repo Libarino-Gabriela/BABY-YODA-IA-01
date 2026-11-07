@@ -313,7 +313,7 @@
       h1 { margin: 0; font-size: 18px; }
       header p { margin: 6px 0 0; color: var(--muted-color); font-size: 13px; }
 
-      /* Agrupa a logo e o nome do assistente na mesma linha. */
+      /* Mantém a logo alinhada ao centro do cabeçalho. */
       .brand-title {
         display: flex;
         align-items: center;
@@ -322,17 +322,16 @@
 
       .brand-logo {
         display: block;
-        width: 42px;
-        height: 52px;
+        width: 120px;
+        height: 60px;
         object-fit: contain;
       }
 
-      /* Camadas animadas posicionadas sobre o rosto do personagem da logo. */
       .brand-character {
         position: relative;
-        width: 42px;
-        height: 52px;
-        flex: 0 0 42px;
+        width: 120px;
+        height: 60px;
+        flex: 0 0 120px;
       }
 
       .brand-character .brand-logo {
@@ -340,66 +339,44 @@
         inset: 0;
       }
 
-      /* Pálpebras azuis que fecham brevemente os olhos em intervalos. */
       .character-eyelid {
         position: absolute;
-        top: 14%;
-        width: 14%;
-        height: 5%;
+        top: 30%;
+        width: 10%;
+        height: 15%;
         border-radius: 50%;
-        background: #40599f;
+        background: #2a4e88;
         opacity: 0;
         transform: scaleY(.08);
         transform-origin: center;
-        animation: character-blink 5.2s infinite;
+        animation: character-blink 2.4s ease-in-out infinite;
       }
 
-      .character-eyelid.left { left: 31%; }
-      .character-eyelid.right { left: 57%; }
+      .character-eyelid.left { left: 34%; }
+      .character-eyelid.right { left: 56%; }
 
       @keyframes character-blink {
-        0%, 3%, 7%, 100% { opacity: 0; transform: scaleY(.08); }
-        4%, 6% { opacity: .96; transform: scaleY(1); }
+        0%, 10%, 100% { opacity: 0; transform: scaleY(.08); }
+        2%, 6% { opacity: .98; transform: scaleY(1); }
       }
 
-      /* Boca pequena que abre e fecha suavemente durante a animação. */
-      .character-mouth {
-        position: absolute;
-        top: 19%;
-        left: 47%;
-        width: 7%;
-        height: 3%;
-        border-radius: 50%;
-        background: #10172e;
-        opacity: .9;
-        transform: scaleY(.35);
-        transform-origin: center;
-        animation: character-mouth-move 1.4s ease-in-out infinite;
-      }
-
-      @keyframes character-mouth-move {
-        0%, 100% { transform: scaleY(.3); }
-        50% { transform: scaleY(1.35); }
-      }
-
-      /* Cápsula com ícone e rótulo para alternar entre os temas. */
+      /* Botão circular para alternar entre os temas. */
       .theme-toggle {
-        flex-shrink: 0;
-        position: relative;
-        width: 190px;
-        min-width: 190px;
-        height: 48px;
-        padding: 5px;
+        display: grid;
+        width: 42px;
+        min-width: 42px;
+        height: 42px;
+        padding: 0;
+        place-items: center;
         border: 0;
-        border-radius: 999px;
+        border-radius: 50%;
         background: var(--brand-color);
         color: #ffffff;
-        text-align: center;
         box-shadow: 0 4px 12px #173c3026;
         transition: transform 180ms ease, background-color 220ms ease, box-shadow 180ms ease;
       }
 
-      /* Responde ao cursor, teclado e clique para o seletor parecer interativo. */
+      /* Responde ao cursor, teclado e clique. */
       .theme-toggle:hover {
         transform: translateY(-2px);
         box-shadow: 0 7px 18px #173c3033;
@@ -414,38 +391,14 @@
         outline-offset: 4px;
       }
 
-      /* Círculo claro que contém o ícone do tema atual. */
       .theme-icon {
         display: grid;
-        position: absolute;
-        top: 5px;
-        left: 5px;
-        width: 38px;
-        height: 38px;
+        width: 24px;
+        height: 24px;
         flex-shrink: 0;
         place-items: center;
         border-radius: 50%;
-        background: #ffffff;
-        color: var(--brand-color);
-        transition: transform 360ms cubic-bezier(.2, .8, .2, 1), color 220ms ease;
-      }
-
-      /* Desliza o círculo para a direita no modo escuro e para a esquerda no claro. */
-      .theme-toggle[aria-pressed="true"] .theme-icon {
-        transform: translateX(142px);
-      }
-
-      .theme-label {
-        display: block;
-        position: absolute;
-        right: 8px;
-        left: 52px;
-        transition: left 360ms cubic-bezier(.2, .8, .2, 1), right 360ms cubic-bezier(.2, .8, .2, 1);
-      }
-
-      .theme-toggle[aria-pressed="true"] .theme-label {
-        right: 52px;
-        left: 8px;
+        transition: color 220ms ease;
       }
 
       .theme-icon svg {
@@ -473,14 +426,6 @@
       .add-files,
       textarea {
         transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease;
-      }
-
-      /* Nome em português do tema para o qual o botão vai alternar. */
-      .theme-label {
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: .04em;
-        text-transform: uppercase;
       }
 
       /* Agrupa as configurações e o controle de tema no cabeçalho. */
@@ -1021,8 +966,7 @@
           animation: none;
         }
 
-        .character-eyelid,
-        .character-mouth {
+        .character-eyelid {
           display: none;
           animation: none;
         }
@@ -1049,19 +993,14 @@
           gap: 6px;
         }
         .theme-toggle {
-          width: 154px;
-          min-width: 154px;
+          width: 36px;
+          min-width: 36px;
+          height: 36px;
         }
         .settings-trigger {
           width: 36px;
           min-width: 36px;
           height: 36px;
-        }
-        .theme-toggle[aria-pressed="true"] .theme-icon {
-          transform: translateX(106px);
-        }
-        .theme-label {
-          font-size: 10px;
         }
         #messages { padding: 18px; }
         form { padding: 12px; }
@@ -1092,6 +1031,16 @@
         <div class="sources-select-all">
           <span id="selected-count">0 selecionadas</span>
           <label for="select-all">Selecionar tudo
+        .brand-logo {
+          width: min(150px, calc(100vw - 244px));
+          height: auto;
+        }
+        .brand-character {
+          width: min(150px, calc(100vw - 244px));
+          height: auto;
+          flex-basis: min(150px, calc(100vw - 244px));
+          aspect-ratio: 247 / 124;
+        }
             <input id="select-all" type="checkbox" aria-label="Selecionar todas as fontes" disabled>
           </label>
         </div>
@@ -1111,9 +1060,7 @@
                 <img class="brand-logo" src="./logo-yoda.png" alt="Logo do YODA">
                 <span class="character-eyelid left" aria-hidden="true"></span>
                 <span class="character-eyelid right" aria-hidden="true"></span>
-                <span class="character-mouth" aria-hidden="true"></span>
               </span>
-              <h1>YODA</h1>
             </div>
             <p></p>
           </div>
@@ -1144,7 +1091,7 @@
                 </button>
               </div>
             </div>
-            <!-- Botão em formato de cápsula que alterna o tema. -->
+            <!-- Botão que alterna o tema. -->
             <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Ativar tema claro" aria-pressed="true">
               <span class="theme-icon" id="theme-icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1152,7 +1099,6 @@
                   <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                 </svg>
               </span>
-              <span class="theme-label" id="theme-label">Modo claro</span>
             </button>
           </div>
         </header>
@@ -1278,7 +1224,6 @@
       // Botão e elementos visuais do seletor de tema.
       const themeToggle = document.querySelector("#theme-toggle");
       const themeIcon = document.querySelector("#theme-icon");
-      const themeLabel = document.querySelector("#theme-label");
       const settingsTrigger = document.querySelector("#settings-trigger");
             const settingsMenu = document.querySelector("#settings-menu");
       const openHistoryButton = document.querySelector("#open-history");
@@ -1289,13 +1234,12 @@
       const feedbackForm = document.querySelector("#feedback-form");
       const feedbackSuccess = document.querySelector("#feedback-success");
 
-      // Atualiza o tema da página, o ícone e o rótulo da próxima opção.
+      // Atualiza o tema da página e o ícone da próxima opção.
       function setTheme(theme) {
         document.documentElement.dataset.theme = theme;
         const darkThemeIsActive = theme === "dark";
         themeToggle.setAttribute("aria-pressed", String(darkThemeIsActive));
         themeToggle.setAttribute("aria-label", darkThemeIsActive ? "Ativar tema claro" : "Ativar tema escuro");
-        themeLabel.textContent = darkThemeIsActive ? "Modo claro" : "Modo escuro";
         themeIcon.innerHTML = darkThemeIsActive
           ? '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
           : '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20.2 15.1A8.5 8.5 0 0 1 8.9 3.8 8.7 8.7 0 1 0 20.2 15.1Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="m17.5 3 .5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5.5-1.5Z" fill="currentColor"/></svg>';
