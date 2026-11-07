@@ -933,6 +933,14 @@
 
       /* Destaca o botão Enviar ao passar o cursor e dá retorno ao pressioná-lo. */
       #send {
+        display: grid;
+        width: 48px;
+        min-width: 48px;
+        height: 48px;
+        flex: 0 0 48px;
+        place-items: center;
+        padding: 0;
+        border-radius: 50%;
         transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
       }
 
@@ -943,6 +951,45 @@
 
       #send:active:not(:disabled) {
         transform: translateY(0) scale(.97);
+      }
+
+      #voice-record {
+        display: grid;
+        width: 48px;
+        min-width: 48px;
+        height: 48px;
+        flex: 0 0 48px;
+        place-items: center;
+        padding: 0;
+        border-radius: 50%;
+        background: var(--brand-color);
+        color: white;
+        transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+      }
+
+      #voice-record:hover:not(:disabled) {
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 8px 18px #173c3040;
+      }
+
+      #voice-record:active:not(:disabled) {
+        transform: translateY(0) scale(.97);
+      }
+
+      #voice-record[aria-pressed="true"] {
+        background: #c62828;
+      }
+
+      #voice-record[aria-pressed="true"]:hover:not(:disabled) {
+        background: #a91f1f;
+      }
+
+      .voice-status {
+        display: block;
+        min-height: 18px;
+        margin: 6px 60px 0 2px;
+        color: var(--muted-color);
+        font-size: 12px;
       }
 
       /* Indica visualmente que o envio está sendo processado. */
@@ -989,6 +1036,16 @@
         .chat { height: auto; border-radius: 16px 16px 0 0; }
         header { padding: 16px; }
         header p { max-width: 240px; }
+        .brand-logo {
+          width: min(150px, calc(100vw - 244px));
+          height: auto;
+        }
+        .brand-character {
+          width: min(150px, calc(100vw - 244px));
+          height: auto;
+          flex-basis: min(150px, calc(100vw - 244px));
+          aspect-ratio: 247 / 124;
+        }
         .header-actions {
           gap: 6px;
         }
@@ -1031,16 +1088,6 @@
         <div class="sources-select-all">
           <span id="selected-count">0 selecionadas</span>
           <label for="select-all">Selecionar tudo
-        .brand-logo {
-          width: min(150px, calc(100vw - 244px));
-          height: auto;
-        }
-        .brand-character {
-          width: min(150px, calc(100vw - 244px));
-          height: auto;
-          flex-basis: min(150px, calc(100vw - 244px));
-          aspect-ratio: 247 / 124;
-        }
             <input id="select-all" type="checkbox" aria-label="Selecionar todas as fontes" disabled>
           </label>
         </div>
@@ -1112,8 +1159,19 @@
           <div class="composer-row">
 
             <textarea id="prompt" placeholder="Pergunte sobre as fontes selecionadas..." aria-label="Sua pergunta sobre os arquivos" required></textarea>
-            <button id="send" type="submit">Enviar</button>
+            <button id="send" type="submit" aria-label="Enviar mensagem" title="Enviar mensagem">
+              <svg viewBox="0 0 24 24" width="21" height="21" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 19V5m0 0 6 6m-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button id="voice-record" type="button" aria-label="Gravar pergunta em áudio" title="Gravar pergunta em áudio" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="21" height="21" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="9" y="2.5" width="6" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3.5m-4 0h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </button>
           </div>
+          <span id="voice-status" class="voice-status" role="status" aria-live="polite"></span>
         </form>
         <!-- Créditos de desenvolvimento e autoria do projeto. -->
         <footer class="credits-footer">
@@ -1210,8 +1268,99 @@
       const form = document.querySelector("#chat-form");
       const input = document.querySelector("#prompt");
             const sendButton = document.querySelector("#send");
+      const voiceRecordButton = document.querySelector("#voice-record");
+      const voiceStatus = document.querySelector("#voice-status");
       const messages = document.querySelector("#messages");
       const fileInput = document.querySelector("#file-input");
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      let recognition = null;
+      let isRecording = false;
+      let voiceRecognitionError = false;
+      let voiceTranscriptReceived = false;
+
+      if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = "pt-BR";
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.addEventListener("start", () => {
+          isRecording = true;
+          voiceTranscriptReceived = false;
+          voiceRecordButton.setAttribute("aria-pressed", "true");
+          voiceRecordButton.setAttribute("aria-label", "Parar gravação");
+          voiceRecordButton.title = "Parar gravação";
+          voiceStatus.textContent = "Ouvindo... Clique no microfone para encerrar.";
+        });
+
+        recognition.addEventListener("result", (event) => {
+          let finalTranscript = "";
+          let interimTranscript = "";
+          for (let index = event.resultIndex; index < event.results.length; index += 1) {
+            const transcript = event.results[index][0].transcript;
+            if (event.results[index].isFinal) {
+              finalTranscript += transcript;
+            } else {
+              interimTranscript += transcript;
+            }
+          }
+
+          if (finalTranscript.trim()) {
+            const existingText = input.value.trimEnd();
+            const separator = existingText ? " " : "";
+            input.value = `${existingText}${separator}${finalTranscript.trim()}`;
+            voiceTranscriptReceived = true;
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+          }
+          if (interimTranscript.trim()) {
+            voiceStatus.textContent = `Ouvindo: ${interimTranscript.trim()}`;
+          } else if (isRecording && !voiceRecognitionError) {
+            voiceStatus.textContent = "Ouvindo... Clique no microfone para encerrar.";
+          }
+        });
+
+        recognition.addEventListener("error", (event) => {
+          if (event.error === "aborted") return;
+          voiceRecognitionError = true;
+          const errors = {
+            "not-allowed": "Permita o acesso ao microfone nas configurações do navegador.",
+            "service-not-allowed": "O serviço de reconhecimento de voz não está disponível.",
+            "no-speech": "Nenhuma fala foi detectada. Tente novamente.",
+            "audio-capture": "Não foi possível acessar um microfone neste dispositivo.",
+          };
+          voiceStatus.textContent = errors[event.error] || `Erro no reconhecimento de voz: ${event.error}.`;
+        });
+
+        recognition.addEventListener("end", () => {
+          isRecording = false;
+          voiceRecordButton.setAttribute("aria-pressed", "false");
+          voiceRecordButton.setAttribute("aria-label", "Gravar pergunta em áudio");
+          voiceRecordButton.title = "Gravar pergunta em áudio";
+          if (!voiceRecognitionError) {
+            voiceStatus.textContent = voiceTranscriptReceived
+              ? "Gravação finalizada. Confira a pergunta antes de enviar."
+              : "Gravação finalizada sem transcrição.";
+          }
+        });
+      }
+
+      voiceRecordButton.addEventListener("click", () => {
+        if (!recognition) {
+          voiceStatus.textContent = "Seu navegador não oferece suporte à gravação por voz.";
+          return;
+        }
+        if (isRecording) {
+          recognition.stop();
+          return;
+        }
+        voiceRecognitionError = false;
+        voiceStatus.textContent = "";
+        try {
+          recognition.start();
+        } catch (error) {
+          voiceStatus.textContent = `Não foi possível iniciar a gravação: ${error.message}`;
+        }
+      });
 
       const addFilesButton = document.querySelector("#add-files");
       const fileList = document.querySelector("#file-list");
@@ -1519,6 +1668,11 @@
 
         // Evita que o navegador recarregue a página ao enviar o formulário.
         event.preventDefault();
+        if (isRecording) {
+          recognition.stop();
+          voiceStatus.textContent = "Finalizando a gravação. Confira a transcrição antes de enviar.";
+          return;
+        }
         // Lê o texto digitado e remove espaços sobrando no início e no fim.
         const message = input.value.trim();
         // Não envia mensagens vazias nem permite envios repetidos enquanto aguarda.
@@ -1546,6 +1700,7 @@
         input.value = "";
         // Desativa o botão enquanto a IA está processando a solicitação.
         sendButton.disabled = true;
+        voiceRecordButton.disabled = true;
         isSending = true;
         addFilesButton.disabled = true;
         fileInput.disabled = true;
@@ -1592,6 +1747,7 @@
         } finally {
           // Reativa o botão mesmo se a comunicação com o backend falhar.
           sendButton.disabled = false;
+          voiceRecordButton.disabled = false;
           isSending = false;
           addFilesButton.disabled = false;
           fileInput.disabled = false;
